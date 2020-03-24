@@ -104,7 +104,7 @@ Generate the corresponding public key for our private key:
 $ openssl pkey -in prv.pem -pubout -out pub.pem
 ```
 
-## Internals overview.
+## Internals overview
 
 The core is based on ECIES outlined in the diagram below.
 
