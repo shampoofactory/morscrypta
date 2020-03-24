@@ -93,7 +93,7 @@ $ morscrypta decrypt --in my.file.enc --out my.file --key prv.pem
 
 We can also use OpenSSL to generate keys.
 
-Generate a private key.
+Generate a private key:
 
 ```
 $ openssl genpkey -algorithm X25519 -out prv.pem
