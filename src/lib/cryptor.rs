@@ -6,9 +6,12 @@ use aes_ctr::stream_cipher::{NewStreamCipher, SyncStreamCipher};
 use aes_ctr::Aes256Ctr;
 use hmac::crypto_mac::MacResult;
 use hmac::Mac;
+use zeroize::Zeroize;
 
 use std::io::prelude::*;
 
+#[derive(Zeroize)]
+#[zeroize(drop)]
 pub struct CryptorCore {
     cipher_key: [u8; 32],
     hmac_key: [u8; 64],
