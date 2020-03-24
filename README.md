@@ -116,7 +116,7 @@ Key agreement (KA) is x25519 ECDH.
 
 Key-derivation function (KDF) is HKDF-SHA256 + INFO MAC/ ENC.
 
-Encryption engine is AES CTR.
+Encryption engine is AES-256 CTR.
 
 MAC is HMAC-SHA256.
 
