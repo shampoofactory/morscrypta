@@ -1,7 +1,7 @@
 # morscrypta
 
+![Apache 2.0/MIT Licensed](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue)
 ![Rust](https://github.com/shampoofactory/morscrypta/workflows/Rust/badge.svg)
-
 
 Elliptic Curve Integrated Encryption Scheme (ECIES) based asymmetric file encryption. Although fully
 functional, this project is primarily an exercise in working with cryptographic primitives and 
