@@ -42,11 +42,11 @@ where
     loop {
         let n = src.read_fully(&mut buf[32..blk_len + 32])?;
         if n == blk_len {
-            encryptor.process(&mut buf[32..blk_len + 32]);
+            encryptor.process(&mut buf[32..blk_len + 32])?;
             dst.write_all(&buf[..blk_len])?;
             buf.copy_within(blk_len..blk_len + 32, 0);
         } else {
-            encryptor.process(&mut buf[32..n + 32]);
+            encryptor.process(&mut buf[32..n + 32])?;
             let code = encryptor.finalize().code();
             (&mut buf[n + 32..n + 64]).copy_from_slice(&code);
             dst.write_all(&buf[..n + 64])?;

@@ -1,3 +1,4 @@
+use super::error::{Error, Result};
 use super::global::*;
 
 use aes_ctr::stream_cipher::generic_array::GenericArray;
@@ -6,7 +7,6 @@ use aes_ctr::Aes256Ctr;
 use hmac::crypto_mac::MacResult;
 use hmac::Mac;
 
-use std::io;
 use std::io::prelude::*;
 
 pub struct CryptorCore {
@@ -34,7 +34,8 @@ impl CryptorCore {
     pub fn encryptor(self) -> Encryptor {
         let cipher = self.cipher();
         let hmac = self.hmac();
-        Encryptor { cipher, hmac }
+        let len = 0;
+        Encryptor { cipher, hmac, len }
     }
 
     #[inline(always)]
@@ -59,14 +60,15 @@ impl CryptorCore {
 }
 
 pub trait Cryptor {
-    fn process(&mut self, buf: &mut [u8]);
+    fn process(&mut self, buf: &mut [u8]) -> Result<()>;
 
-    fn process_write<W>(&mut self, buf: &mut [u8], dst: &mut W) -> io::Result<()>
+    fn process_write<W>(&mut self, buf: &mut [u8], dst: &mut W) -> Result<()>
     where
         W: Write,
     {
-        self.process(buf);
-        dst.write_all(buf)
+        self.process(buf)?;
+        dst.write_all(buf)?;
+        Ok(())
     }
 
     fn finalize(self) -> MacResult<<HmacSha256 as Mac>::OutputSize>;
@@ -75,12 +77,18 @@ pub trait Cryptor {
 pub struct Encryptor {
     cipher: Aes256Ctr,
     hmac: HmacSha256,
+    len: u64,
 }
 
 impl Cryptor for Encryptor {
-    fn process(&mut self, buf: &mut [u8]) {
+    fn process(&mut self, buf: &mut [u8]) -> Result<()> {
+        self.len += buf.len() as u64;
+        if self.len > MAX_ENC_LEN {
+            return Err(Error::InputOverflow);
+        }
         self.cipher.apply_keystream(buf);
         self.hmac.input(buf);
+        Ok(())
     }
 
     fn finalize(self) -> MacResult<<HmacSha256 as Mac>::OutputSize> {
@@ -94,9 +102,10 @@ pub struct Decryptor {
 }
 
 impl Cryptor for Decryptor {
-    fn process(&mut self, buf: &mut [u8]) {
+    fn process(&mut self, buf: &mut [u8]) -> Result<()> {
         self.hmac.input(buf);
         self.cipher.apply_keystream(buf);
+        Ok(())
     }
 
     fn finalize(self) -> MacResult<<HmacSha256 as Mac>::OutputSize> {
