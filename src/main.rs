@@ -184,10 +184,11 @@ fn load_key<R: Read>(src: &mut R, buf: &mut [u8]) -> lib::Result<usize> {
 }
 
 fn arg_matches() -> ArgMatches<'static> {
-    App::new("mors_crypta")
+    App::new("morscrypta")
         .version(crate_version!())
         .author("Vin Singh <github.com/shampoofactory>")
         .about("AES-256 file encryption")
+        .after_help("See 'morscrypta help <command>' for more information on a specific command.")
         .subcommand(
             SubCommand::with_name("prvsec")
                 .about("Generate a secure random private key.")
