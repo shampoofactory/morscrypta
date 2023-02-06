@@ -1,14 +1,16 @@
 use super::error::{Error, Result};
 use super::global::*;
 
-use aes_ctr::stream_cipher::generic_array::GenericArray;
-use aes_ctr::stream_cipher::{NewStreamCipher, SyncStreamCipher};
-use aes_ctr::Aes256Ctr;
+use aes::cipher::{KeyIvInit, StreamCipher};
+use aes::Aes256;
+use ctr::Ctr128BE;
 use hmac::crypto_mac::MacResult;
 use hmac::Mac;
 use zeroize::Zeroize;
 
 use std::io::prelude::*;
+
+pub type Aes256Ctr = Ctr128BE<Aes256>;
 
 #[derive(Zeroize)]
 #[zeroize(drop)]
@@ -50,15 +52,12 @@ impl CryptorCore {
 
     #[inline(always)]
     fn cipher(&self) -> Aes256Ctr {
-        let cipher_key = GenericArray::from_slice(&self.cipher_key);
-        let cipher_nonce = GenericArray::from_slice(&[0u8; 16]);
-        Aes256Ctr::new(&cipher_key, &cipher_nonce)
+        Aes256Ctr::new(&self.cipher_key.into(), &[0u8; 16].into())
     }
 
     #[inline(always)]
     fn hmac(&self) -> HmacSha256 {
-        let hmac_key = GenericArray::from_slice(&self.hmac_key);
-        HmacSha256::new(hmac_key)
+        HmacSha256::new(self.hmac_key.as_slice().into())
     }
 }
 
