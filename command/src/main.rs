@@ -1,5 +1,3 @@
-pub mod lib;
-
 use clap::{crate_version, App, AppSettings, Arg, ArgGroup, ArgMatches, SubCommand};
 use rand_core::OsRng;
 use regex::Regex;
@@ -12,7 +10,7 @@ use std::io::prelude::*;
 use std::process;
 use std::str::FromStr;
 
-use lib::{GenPBKDF2, PemExport, PemImport, ReadFully};
+use morscrypta::{GenPBKDF2, PemExport, PemImport, ReadFully};
 
 fn main() {
     process::exit(match execute() {
@@ -24,7 +22,7 @@ fn main() {
     });
 }
 
-fn execute() -> lib::Result<()> {
+fn execute() -> morscrypta::Result<()> {
     let matches = arg_matches();
     match matches.subcommand() {
         ("prvsec", Some(m)) => prv_sec(m.value_of("output")),
@@ -64,7 +62,7 @@ fn execute() -> lib::Result<()> {
     }
 }
 
-fn prv_sec(dst: Option<&str>) -> lib::Result<()> {
+fn prv_sec(dst: Option<&str>) -> morscrypta::Result<()> {
     let mut output: Box<dyn Write> = match dst {
         Some(path) => Box::new(File::create(path)?),
         None => Box::new(io::stdout()),
@@ -74,7 +72,7 @@ fn prv_sec(dst: Option<&str>) -> lib::Result<()> {
     Ok(())
 }
 
-fn prv_kdf(output: Option<&str>, password: &str, iteration_count: &str) -> lib::Result<()> {
+fn prv_kdf(output: Option<&str>, password: &str, iteration_count: &str) -> morscrypta::Result<()> {
     let password = password.as_bytes();
     let iteration_count = usize::from_str(iteration_count).unwrap();
     let mut output: Box<dyn Write> = match output {
@@ -86,7 +84,7 @@ fn prv_kdf(output: Option<&str>, password: &str, iteration_count: &str) -> lib::
     Ok(())
 }
 
-fn pub_key(src: Option<&str>, dst: Option<&str>) -> lib::Result<()> {
+fn pub_key(src: Option<&str>, dst: Option<&str>) -> morscrypta::Result<()> {
     let mut input: Box<dyn Read> = match src {
         Some(path) => Box::new(File::open(path)?),
         None => Box::new(io::stdin()),
@@ -102,7 +100,11 @@ fn pub_key(src: Option<&str>, dst: Option<&str>) -> lib::Result<()> {
     Ok(())
 }
 
-fn encrypt_key(input: Option<&str>, output: Option<&str>, key_path: &str) -> lib::Result<()> {
+fn encrypt_key(
+    input: Option<&str>,
+    output: Option<&str>,
+    key_path: &str,
+) -> morscrypta::Result<()> {
     let mut src = File::open(key_path)?;
     let pub_key = load_pub_key(&mut src)?;
     encrypt(input, output, &pub_key)
@@ -113,7 +115,7 @@ fn encrypt_kdf(
     output: Option<&str>,
     password: &str,
     iteration_count: &str,
-) -> lib::Result<()> {
+) -> morscrypta::Result<()> {
     let password = password.as_bytes();
     let iteration_count = usize::from_str(iteration_count).unwrap();
     let prv_key = StaticSecret::gen_pbkdf2(password, iteration_count);
@@ -121,7 +123,11 @@ fn encrypt_kdf(
     encrypt(input, output, &pub_key)
 }
 
-fn encrypt(input: Option<&str>, output: Option<&str>, pub_key: &PublicKey) -> lib::Result<()> {
+fn encrypt(
+    input: Option<&str>,
+    output: Option<&str>,
+    pub_key: &PublicKey,
+) -> morscrypta::Result<()> {
     let mut input: Box<dyn Read> = match input {
         Some(path) => Box::new(File::open(path)?),
         None => Box::new(io::stdin()),
@@ -130,10 +136,14 @@ fn encrypt(input: Option<&str>, output: Option<&str>, pub_key: &PublicKey) -> li
         Some(path) => Box::new(File::create(path)?),
         None => Box::new(io::stdout()),
     };
-    lib::encrypt(&mut input, &mut output, pub_key)
+    morscrypta::encrypt(&mut input, &mut output, pub_key)
 }
 
-fn decrypt_key(input: Option<&str>, output: Option<&str>, key_path: &str) -> lib::Result<()> {
+fn decrypt_key(
+    input: Option<&str>,
+    output: Option<&str>,
+    key_path: &str,
+) -> morscrypta::Result<()> {
     let mut src = File::open(key_path)?;
     let prv_key = load_prv_key(&mut src)?;
     decrypt(input, output, &prv_key)
@@ -144,14 +154,18 @@ fn decrypt_kdf(
     output: Option<&str>,
     password: &str,
     iteration_count: &str,
-) -> lib::Result<()> {
+) -> morscrypta::Result<()> {
     let password = password.as_bytes();
     let iteration_count = usize::from_str(iteration_count).unwrap();
     let prv_key = StaticSecret::gen_pbkdf2(password, iteration_count);
     decrypt(input, output, &prv_key)
 }
 
-fn decrypt(input: Option<&str>, output: Option<&str>, prv_key: &StaticSecret) -> lib::Result<()> {
+fn decrypt(
+    input: Option<&str>,
+    output: Option<&str>,
+    prv_key: &StaticSecret,
+) -> morscrypta::Result<()> {
     let mut input: Box<dyn Read> = match input {
         Some(path) => Box::new(File::open(path)?),
         None => Box::new(io::stdin()),
@@ -160,25 +174,25 @@ fn decrypt(input: Option<&str>, output: Option<&str>, prv_key: &StaticSecret) ->
         Some(path) => Box::new(File::create(path)?),
         None => Box::new(io::stdout()),
     };
-    lib::decrypt(&mut input, &mut output, prv_key)
+    morscrypta::decrypt(&mut input, &mut output, prv_key)
 }
 
-fn load_pub_key<R: Read>(src: &mut R) -> lib::Result<PublicKey> {
+fn load_pub_key<R: Read>(src: &mut R) -> morscrypta::Result<PublicKey> {
     let mut buf = [0u8; 1024];
     let n = load_key(src, &mut buf)?;
     PublicKey::pem_import(&buf[..n])
 }
 
-fn load_prv_key<R: Read>(src: &mut R) -> lib::Result<StaticSecret> {
+fn load_prv_key<R: Read>(src: &mut R) -> morscrypta::Result<StaticSecret> {
     let mut buf = [0u8; 1024];
     let n = load_key(src, &mut buf)?;
     StaticSecret::pem_import(&buf[..n])
 }
 
-fn load_key<R: Read>(src: &mut R, buf: &mut [u8]) -> lib::Result<usize> {
+fn load_key<R: Read>(src: &mut R, buf: &mut [u8]) -> morscrypta::Result<usize> {
     let n = src.read_fully(buf)?;
     if n == buf.len() {
-        return Err(lib::Error::KeyImport("key buffer overflow".into()));
+        return Err(morscrypta::Error::KeyImport("key buffer overflow".into()));
     }
     Ok(n)
 }
