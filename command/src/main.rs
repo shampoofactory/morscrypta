@@ -74,7 +74,7 @@ fn prv_sec(dst: Option<&str>) -> morscrypta::Result<()> {
 
 fn prv_kdf(output: Option<&str>, password: &str, iteration_count: &str) -> morscrypta::Result<()> {
     let password = password.as_bytes();
-    let iteration_count = usize::from_str(iteration_count).unwrap();
+    let iteration_count = u32::from_str(iteration_count).unwrap();
     let mut output: Box<dyn Write> = match output {
         Some(path) => Box::new(File::create(path)?),
         None => Box::new(io::stdout()),
@@ -117,7 +117,7 @@ fn encrypt_kdf(
     iteration_count: &str,
 ) -> morscrypta::Result<()> {
     let password = password.as_bytes();
-    let iteration_count = usize::from_str(iteration_count).unwrap();
+    let iteration_count = u32::from_str(iteration_count).unwrap();
     let prv_key = StaticSecret::gen_pbkdf2(password, iteration_count);
     let pub_key = PublicKey::from(&prv_key);
     encrypt(input, output, &pub_key)
@@ -156,7 +156,7 @@ fn decrypt_kdf(
     iteration_count: &str,
 ) -> morscrypta::Result<()> {
     let password = password.as_bytes();
-    let iteration_count = usize::from_str(iteration_count).unwrap();
+    let iteration_count = u32::from_str(iteration_count).unwrap();
     let prv_key = StaticSecret::gen_pbkdf2(password, iteration_count);
     decrypt(input, output, &prv_key)
 }
@@ -399,7 +399,7 @@ fn arg_matches() -> ArgMatches<'static> {
 }
 
 fn is_iter(v: String) -> Result<(), String> {
-    match usize::from_str(&v) {
+    match u32::from_str(&v) {
         Ok(v) if v >= 100_000 => Ok(()),
         Ok(_) => Err("iteration count: minimum of 100000".into()),
         Err(e) => Err(format!("{}", e)),

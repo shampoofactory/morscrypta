@@ -4,12 +4,15 @@ use super::global::*;
 use aes::cipher::{KeyIvInit, StreamCipher};
 use aes::Aes256;
 use ctr::Ctr128BE;
-use hmac::crypto_mac::MacResult;
-use hmac::Mac;
+use hkdf::Hkdf;
+use hmac::digest::CtOutput;
+use hmac::{Hmac, Mac};
+use sha2::Sha256;
 use zeroize::Zeroize;
 
 use std::io::prelude::*;
 
+// TODO move to global
 pub type Aes256Ctr = Ctr128BE<Aes256>;
 
 #[derive(Zeroize)]
@@ -25,7 +28,7 @@ impl CryptorCore {
         let mut cipher_key = [0u8; 32];
         let mut hmac_key = [0u8; 64];
 
-        let h = HkdfSha256::new(None, ikm);
+        let h = Hkdf::<Sha256>::new(None, ikm);
         h.expand(INFO_KEY, &mut cipher_key).unwrap();
         h.expand(INFO_MAC, &mut hmac_key).unwrap();
 
@@ -56,8 +59,8 @@ impl CryptorCore {
     }
 
     #[inline(always)]
-    fn hmac(&self) -> HmacSha256 {
-        HmacSha256::new(self.hmac_key.as_slice().into())
+    fn hmac(&self) -> Hmac<Sha256> {
+        Hmac::<Sha256>::new(self.hmac_key.as_slice().into())
     }
 }
 
@@ -73,12 +76,12 @@ pub trait Cryptor {
         Ok(())
     }
 
-    fn finalize(self) -> MacResult<<HmacSha256 as Mac>::OutputSize>;
+    fn finalize(self) -> CtOutput<Hmac<Sha256>>;
 }
 
 pub struct Encryptor {
     cipher: Aes256Ctr,
-    hmac: HmacSha256,
+    hmac: Hmac<Sha256>,
     len: u64,
 }
 
@@ -89,28 +92,28 @@ impl Cryptor for Encryptor {
             return Err(Error::InputOverflow);
         }
         self.cipher.apply_keystream(buf);
-        self.hmac.input(buf);
+        self.hmac.update(buf);
         Ok(())
     }
 
-    fn finalize(self) -> MacResult<<HmacSha256 as Mac>::OutputSize> {
-        self.hmac.result()
+    fn finalize(self) -> CtOutput<Hmac<Sha256>> {
+        self.hmac.finalize()
     }
 }
 
 pub struct Decryptor {
     cipher: Aes256Ctr,
-    hmac: HmacSha256,
+    hmac: Hmac<Sha256>,
 }
 
 impl Cryptor for Decryptor {
     fn process(&mut self, buf: &mut [u8]) -> Result<()> {
-        self.hmac.input(buf);
+        self.hmac.update(buf);
         self.cipher.apply_keystream(buf);
         Ok(())
     }
 
-    fn finalize(self) -> MacResult<<HmacSha256 as Mac>::OutputSize> {
-        self.hmac.result()
+    fn finalize(self) -> CtOutput<Hmac<Sha256>> {
+        self.hmac.finalize()
     }
 }

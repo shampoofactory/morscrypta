@@ -2,17 +2,18 @@ use super::error::Result;
 use super::global::*;
 use super::x25519_pem;
 
-use pbkdf2;
+use hmac::Hmac;
+use sha2::Sha256;
 use x25519_dalek::{PublicKey, StaticSecret};
 
 pub trait GenPBKDF2 {
-    fn gen_pbkdf2(password: &[u8], iteration_count: usize) -> Self;
+    fn gen_pbkdf2(password: &[u8], iteration_count: u32) -> Self;
 }
 
 impl GenPBKDF2 for StaticSecret {
-    fn gen_pbkdf2(password: &[u8], iteration_count: usize) -> Self {
+    fn gen_pbkdf2(password: &[u8], iteration_count: u32) -> Self {
         let mut bs = [0u8; 32];
-        pbkdf2::pbkdf2::<HmacSha256>(password, SALT_KDF, iteration_count, &mut bs);
+        pbkdf2::pbkdf2::<Hmac<Sha256>>(password, SALT_KDF, iteration_count, &mut bs);
         Self::from(bs)
     }
 }

@@ -2,7 +2,10 @@ use super::cryptor::{Cryptor, CryptorCore};
 use super::error::{Error, Result};
 use super::read_ext::ReadFully;
 
+use hmac::digest::Output;
+use hmac::Hmac;
 use rand_core::OsRng;
+use sha2::Sha256;
 use x25519_dalek::{PublicKey, StaticSecret};
 
 use std::io::prelude::*;
@@ -47,7 +50,7 @@ where
             buf.copy_within(blk_len..blk_len + 32, 0);
         } else {
             encryptor.process(&mut buf[32..n + 32])?;
-            let code = encryptor.finalize().code();
+            let code = encryptor.finalize().into_bytes();
             (&mut buf[n + 32..n + 64]).copy_from_slice(&code);
             dst.write_all(&buf[..n + 64])?;
             break;
@@ -107,7 +110,8 @@ where
             }
         }
     };
-    if decryptor.finalize().code().as_ref() == &buf[tail - 32..tail] {
+    let mac = Output::<Hmac<Sha256>>::clone_from_slice(&buf[tail - 32..tail]);
+    if decryptor.finalize() == mac.into() {
         Ok(())
     } else {
         Err(Error::BadDecrypt)
