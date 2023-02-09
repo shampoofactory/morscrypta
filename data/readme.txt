@@ -1,8 +1,8 @@
 Test data:
 
-- data.bin : 1024 random bytes -- $ head -c 1024b < /dev/urandom > data.bin
-- enc0.bin : 'data.bin'        -- $ morscrypta encrypt -i data.bin -o enc0.bin -p LoremIpsumFlyingPossum500
-- enc1.bin : 'data.bin'        -- $ morscrypta encrypt -i data.bin -o enc1.bin -k pub.pem
+- data.bin : plaintext  1024 random bytes -- $ head -c 1024b < /dev/urandom > data.bin
+- enc0.bin : ciphertext 'data.bin'        -- $ morscrypta encrypt -i data.bin -o enc0.bin -p LoremIpsumFlyingPossum500
+- enc1.bin : ciphertext 'data.bin'        -- $ morscrypta encrypt -i data.bin -o enc1.bin -k pub.pem
 
 Test keys:
 
