@@ -31,6 +31,17 @@ SUBCOMMANDS:
 
 ```
 
+## Build
+
+Build with:
+
+```
+$ cargo build --release --manifest-path command/Cargo.toml
+```
+
+The `morscrypta` binary should now be located in `target/release/morscrypta`.
+
+
 ## Quick start using passwords
 
 Complex passwords are essential.
