@@ -15,11 +15,11 @@ pub fn hex_decode(s: &str, buf: &mut [u8]) -> Result<()> {
 }
 
 fn hex(b: u8) -> Result<u8> {
-    if b >= b'0' && b <= b'9' {
+    if (b'0'..=b'9').contains(&b) {
         Ok(b - b'0')
-    } else if b >= b'A' && b <= b'F' {
+    } else if (b'A'..=b'F').contains(&b) {
         Ok(b - b'A' + 10)
-    } else if b >= b'a' && b <= b'f' {
+    } else if (b'a'..=b'f').contains(&b) {
         Ok(b - b'a' + 10)
     } else {
         Err(Error::BadHex(format!("invalid character: {}", b as char)))
