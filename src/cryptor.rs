@@ -12,9 +12,6 @@ use zeroize::Zeroize;
 
 use std::io::prelude::*;
 
-// TODO move to global
-pub type Aes256Ctr = Ctr128BE<Aes256>;
-
 #[derive(Zeroize)]
 #[zeroize(drop)]
 pub struct CryptorCore {
@@ -54,8 +51,8 @@ impl CryptorCore {
     }
 
     #[inline(always)]
-    fn cipher(&self) -> Aes256Ctr {
-        Aes256Ctr::new(&self.cipher_key.into(), &[0u8; 16].into())
+    fn cipher(&self) -> Ctr128BE<Aes256> {
+        Ctr128BE::<Aes256>::new(&self.cipher_key.into(), &[0u8; 16].into())
     }
 
     #[inline(always)]
@@ -80,7 +77,7 @@ pub trait Cryptor {
 }
 
 pub struct Encryptor {
-    cipher: Aes256Ctr,
+    cipher: Ctr128BE<Aes256>,
     hmac: Hmac<Sha256>,
     len: u64,
 }
@@ -102,7 +99,7 @@ impl Cryptor for Encryptor {
 }
 
 pub struct Decryptor {
-    cipher: Aes256Ctr,
+    cipher: Ctr128BE<Aes256>,
     hmac: Hmac<Sha256>,
 }
 
