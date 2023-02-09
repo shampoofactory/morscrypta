@@ -10,7 +10,8 @@ use std::io::prelude::*;
 use std::process;
 use std::str::FromStr;
 
-use morscrypta::{GenPBKDF2, PemExport, PemImport, ReadFully};
+use libmorscrypta as morscrypta;
+use libmorscrypta::{GenPBKDF2, PemExport, PemImport, ReadFully};
 
 fn main() {
     process::exit(match execute() {
