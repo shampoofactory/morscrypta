@@ -25,10 +25,10 @@ impl error::Error for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> std::result::Result<(), fmt::Error> {
         match self {
-            Self::IO(e) => write!(f, "io error: {}", e),
+            Self::IO(e) => write!(f, "io error: {e}"),
             Self::BadDecrypt => write!(f, "decryption failed"),
-            Self::BadHex(s) => write!(f, "hex error: {}", s),
-            Self::KeyImport(s) => write!(f, "key import error: {}", s),
+            Self::BadHex(s) => write!(f, "hex error: {s}"),
+            Self::KeyImport(s) => write!(f, "key import error: {s}"),
             Self::InputOverflow => write!(f, "input overflow"),
         }
     }

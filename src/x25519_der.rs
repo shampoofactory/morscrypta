@@ -17,7 +17,7 @@ pub fn import_pub(bs: &[u8]) -> Result<[u8; 32]> {
             if let [ASN1Block::ObjectIdentifier(_, oid)] = algorithm.as_slice() {
                 if oid == oid_x25519() {
                     let mut bs = [0u8; 32];
-                    bs.copy_from_slice(&subject_public_key);
+                    bs.copy_from_slice(subject_public_key);
                     return Ok(bs);
                 }
                 return Err(Error::KeyImport("unsupported public key type".to_owned()));
@@ -47,15 +47,14 @@ pub fn import_prv(bs: &[u8]) -> Result<[u8; 32]> {
             if version == &BigInt::from(0) {
                 if let [ASN1Block::ObjectIdentifier(_, oid)] = private_key_algorithm.as_slice() {
                     if oid == oid_x25519() {
-                        return import_curve_prv_key(&private_key);
+                        return import_curve_prv_key(private_key);
                     } else {
                         return Err(Error::KeyImport("unsupported private key type".to_owned()));
                     }
                 }
             } else {
                 return Err(Error::KeyImport(format!(
-                    "unsupported private key version: {}",
-                    version
+                    "unsupported private key version: {version}",
                 )));
             }
         }
@@ -80,7 +79,7 @@ fn import_curve_prv_key(bs: &[u8]) -> Result<[u8; 32]> {
         .as_slice()
     {
         let mut bs = [0u8; 32];
-        bs.copy_from_slice(&private_key);
+        bs.copy_from_slice(private_key);
         return Ok(bs);
     }
     Err(Error::KeyImport(

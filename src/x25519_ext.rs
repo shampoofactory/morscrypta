@@ -46,6 +46,6 @@ impl PemExport for StaticSecret {
 
 impl PemExport for PublicKey {
     fn pem_export(&self) -> String {
-        x25519_pem::export_pub(&self.as_bytes())
+        x25519_pem::export_pub(self.as_bytes())
     }
 }

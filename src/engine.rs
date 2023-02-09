@@ -35,13 +35,13 @@ where
     assert!(buf.len() >= 64 + 64);
     let blk_len = buf.len() - 64;
 
-    let prv_ephemeral = StaticSecret::new(&mut OsRng);
+    let prv_ephemeral = StaticSecret::new(OsRng);
     let pub_ephemeral = PublicKey::from(&prv_ephemeral);
     let ikm = prv_ephemeral.diffie_hellman(pub_key);
 
     let mut encryptor = CryptorCore::with_ikm(ikm.as_bytes()).encryptor();
 
-    (&mut buf[0..32]).copy_from_slice(pub_ephemeral.as_bytes());
+    (buf[0..32]).copy_from_slice(pub_ephemeral.as_bytes());
     loop {
         let n = src.read_fully(&mut buf[32..blk_len + 32])?;
         if n == blk_len {
@@ -51,7 +51,7 @@ where
         } else {
             encryptor.process(&mut buf[32..n + 32])?;
             let code = encryptor.finalize().into_bytes();
-            (&mut buf[n + 32..n + 64]).copy_from_slice(&code);
+            (buf[n + 32..n + 64]).copy_from_slice(&code);
             dst.write_all(&buf[..n + 64])?;
             break;
         }

@@ -16,7 +16,7 @@ fn main() {
     process::exit(match execute() {
         Ok(()) => 0,
         Err(err) => {
-            eprintln!("{}", err);
+            eprintln!("{err}");
             1
         }
     });
@@ -67,7 +67,7 @@ fn prv_sec(dst: Option<&str>) -> morscrypta::Result<()> {
         Some(path) => Box::new(File::create(path)?),
         None => Box::new(io::stdout()),
     };
-    let key = StaticSecret::new(&mut OsRng);
+    let key = StaticSecret::new(OsRng);
     output.write_all(key.pem_export().as_bytes())?;
     Ok(())
 }
@@ -402,7 +402,7 @@ fn is_iter(v: String) -> Result<(), String> {
     match u32::from_str(&v) {
         Ok(v) if v >= 100_000 => Ok(()),
         Ok(_) => Err("iteration count: minimum of 100000".into()),
-        Err(e) => Err(format!("{}", e)),
+        Err(e) => Err(format!("{e}")),
     }
 }
 
