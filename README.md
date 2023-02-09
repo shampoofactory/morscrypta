@@ -106,7 +106,9 @@ $ openssl pkey -in prv.pem -pubout -out pub.pem
 
 ## Internals overview
 
-The core is based on ECIES outlined in the diagram below.
+The core is based on Elliptic Curve Integrated Encryption Scheme (ECIES).
+
+![](images/morscrypta_enc.png)
 
 Key size is 256 bits.
 
@@ -129,8 +131,6 @@ Key files are PEM and OpenSSL compatible.
 
 SALT/ INFO parameters reside in [global.rs](src/lib/global.rs).
 
-
-![](images/morscrypta_enc.png)
 
 ## License
 
