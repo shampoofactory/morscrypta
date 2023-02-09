@@ -8,6 +8,9 @@ mod x25519_der;
 mod x25519_ext;
 mod x25519_pem;
 
+#[cfg(test)]
+mod tests;
+
 pub use engine::{decrypt, encrypt};
 pub use error::{Error, Result};
 pub use hex::hex_decode;
